@@ -1,0 +1,13 @@
+#!/bin/bash
+HINT="/userdata/system/logs/dukeos-steam.txt"
+case "$1" in
+  start)
+    mkdir -p /userdata/system/logs
+    if [ ! -f "$HINT" ]; then
+      echo "DukeOS: install Flatpak Steam com.valvesoftware.Steam then batocera-steam-update" > "$HINT"
+    fi
+    ;;
+  stop|restart|reload) ;;
+  *) echo "Usage: $0 {start|stop|restart}" ;;
+esac
+exit 0
