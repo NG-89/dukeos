@@ -1,0 +1,50 @@
+#!/bin/bash
+CONF="/userdata/system/dukeos.conf"
+LOG="/userdata/system/logs/dukeos.log"
+
+load_conf() {
+  [ -f "$CONF" ] || return 0
+  . "$CONF"
+}
+
+log() {
+  [ "${DUKEOS_LOG:-1}" = "1" ] || return 0
+  mkdir -p /userdata/system/logs
+  echo "$(date -Iseconds) $*" >> "$LOG"
+}
+
+link_extra_roms() {
+  [ -n "${DUKEOS_EXTRA_ROMS:-}" ] || return 0
+  IFS=',' read -r -a roots <<< "$DUKEOS_EXTRA_ROMS"
+  dest="/userdata/roms/_dukeos_extra"
+  mkdir -p "$dest"
+  i=0
+  for root in "${roots[@]}"; do
+    root=$(echo "$root" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    [ -d "$root" ] || { log "skip missing $root"; continue; }
+    i=$((i + 1))
+    name="drive${i}"
+    [ -e "$dest/$name" ] && continue
+    ln -s "$root" "$dest/$name" && log "linked $root -> $dest/$name"
+  done
+}
+
+case "$1" in
+  start)
+    load_conf
+    log "DukeOS ${DUKEOS_VERSION:-dev} start"
+    link_extra_roms
+    ;;
+  stop)
+    load_conf
+    log "DukeOS stop"
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    ;;
+esac
+exit 0
