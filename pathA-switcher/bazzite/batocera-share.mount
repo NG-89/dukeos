@@ -1,0 +1,15 @@
+# /etc/systemd/system/var-mnt-batocera.mount  (installed by install-bazzite.sh --mount-share)
+# Mounts Batocera's SHARE (userdata) partition at /var/mnt/batocera when Bazzite boots.
+# nofail: Bazzite still boots fine if the partition is missing.
+[Unit]
+Description=Batocera SHARE partition (DukeOS)
+ConditionPathExists=/dev/disk/by-label/SHARE
+
+[Mount]
+What=/dev/disk/by-label/SHARE
+Where=/var/mnt/batocera
+Type=@FSTYPE@
+Options=nofail,noatime,x-systemd.device-timeout=5s
+
+[Install]
+WantedBy=multi-user.target

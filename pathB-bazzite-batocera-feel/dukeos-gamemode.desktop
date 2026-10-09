@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Game Mode (RetroDECK)
+Comment=Open the Batocera-style game menu (ES-DE in RetroDECK). Quit it to return to KDE.
+Exec=dukeos-gamemode
+Icon=net.retrodeck.retrodeck
+Terminal=false
+Categories=Game;

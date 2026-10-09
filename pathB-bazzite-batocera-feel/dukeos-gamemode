@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Launch RetroDECK (ES-DE) full screen. With --autostart, honours a one-shot
+# "stay on desktop next login" flag so you can get to KDE without editing anything.
+APP=net.retrodeck.retrodeck
+SKIP="$HOME/.config/dukeos/skip-gamemode-once"
+case "${1:-}" in
+  --autostart)
+    if [ -e "$SKIP" ]; then rm -f "$SKIP"; exit 0; fi ;;
+  --desktop-next)
+    mkdir -p "$(dirname "$SKIP")"; touch "$SKIP"
+    command -v notify-send >/dev/null && notify-send -a DukeOS "Next login stays on the KDE desktop"
+    exit 0 ;;
+esac
+exec flatpak run "$APP"

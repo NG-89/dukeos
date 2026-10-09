@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Boot to Batocera
+Comment=Reboot once into Batocera (Bazzite stays installed; next normal boot follows firmware order)
+Exec=boot-to-batocera
+Icon=system-reboot
+Terminal=false
+Categories=Game;System;

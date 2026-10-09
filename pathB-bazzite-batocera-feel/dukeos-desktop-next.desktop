@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Stay on Desktop next login
+Comment=Skip the automatic game menu once
+Exec=dukeos-gamemode --desktop-next
+Icon=user-desktop
+Terminal=false
+Categories=System;

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# DukeOS - Bazzite side: reboot into Batocera ONCE (UEFI BootNext).
+# Usage: boot-to-batocera [--dry-run | status]
+# Mirrors Bazzite's own /usr/bin/boot-windows (efibootmgr -n ... && reboot).
+set -uo pipefail
+LIB="${DUKEOS_LIB:-$HOME/.local/share/dukeos/bootnext.sh}"
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}/dukeos/switcher.conf"
+
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send -a "DukeOS" "Boot to Batocera" "$1"; echo "$1"; }
+[ -f "$LIB" ] || { notify "Missing $LIB - re-run install-bazzite.sh"; exit 1; }
+# shellcheck source-path=SCRIPTDIR source=../lib/bootnext.sh
+. "$LIB"
+
+BATOCERA_BOOTNUM=""
+BATOCERA_LABEL_REGEX="^batocera"
+BATOCERA_LOADER_REGEX="efi.batocera.(shim|boot)x64"
+# shellcheck disable=SC1090
+[ -f "$CONF" ] && . "$CONF"
+
+TARGET_NAME="Batocera"
+TARGET_BOOTNUM="$BATOCERA_BOOTNUM"
+TARGET_LABEL_REGEX="$BATOCERA_LABEL_REGEX"
+TARGET_LOADER_REGEX="$BATOCERA_LOADER_REGEX"
+DRY_RUN=0
+
+case "${1:-}" in
+  status)    show_status; exit 0 ;;
+  --dry-run) DRY_RUN=1 ;;
+  "")        ;;
+  *)         echo "Usage: $0 [--dry-run|status]"; exit 2 ;;
+esac
+
+# Writing EFI variables needs root. Prefer passwordless sudo (install-bazzite.sh
+# --nopasswd, same rule Bazzite's 'ujust setup-boot-windows-steam' writes);
+# otherwise fall back to a graphical polkit prompt (pkexec), then plain sudo.
+if [ "$(id -u)" -eq 0 ]; then SUDO=""
+elif sudo -n true 2>/dev/null || sudo -n -l "$(command -v efibootmgr)" >/dev/null 2>&1; then SUDO="sudo -n"
+elif command -v pkexec >/dev/null 2>&1 && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then SUDO="pkexec"
+else SUDO="sudo"; fi
+
+export TARGET_NAME TARGET_BOOTNUM TARGET_LABEL_REGEX TARGET_LOADER_REGEX DRY_RUN SUDO
+set_bootnext_and_reboot systemctl reboot || { notify "Failed - run 'boot-to-batocera status' in a terminal."; exit 1; }
